@@ -1,0 +1,25 @@
+%Conjugate gradient method for solving equations (subfunctions)
+function [x,iter,time,res,resvec]=CGM(A,b,x0,max_it,tol)
+
+% Input: coefficient matrix (A), right end quantity (b), initial value (x0), tolerance (tol), maximum iteration value (max_it)
+% Output: solution vector (x), iterations (iter), cpu time (time), relative residual modulus (res) at termination
+% Relative residual modulus vector (resvec)
+
+tic;
+r=b-A*x;p=r;rho=r'*r;
+mr=sqrt(rho);iter=0;
+while (iter<max_it)
+    iter=iter+1;
+    z=A*p;
+    alpha=rho/(z'*p);
+    x=x+alpha*p;r=r-alpha*z;
+    rho1=r'*r;
+    beta=rho1/rho;
+    p=r+beta*p;
+    res=sqrt(rho1)/ mr;
+    resvec(iter)=res;
+    if (res<tol), break; end
+    rho=rho1;
+end
+t=toc;
+time=t;

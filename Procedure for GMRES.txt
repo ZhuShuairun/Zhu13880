@@ -1,0 +1,44 @@
+% GMRES method for solving equations (subfunctions)
+function [x,k1,res1,resvec1]=GMRES(A,b,x0,max_it,tol)
+
+% Input: coefficient matrix (A), right end quantity (b), initial value (x0), tolerance (tol), maximum iteration value (max_it)
+% Output: solution vector (x), iterations (k1), cpu time (time), relative residual modulus (res) at termination
+% Relative residual modulus vector (resvec)
+
+flag=0;
+r=b-A*x;
+beta=norm(r);    % Calculated Residual
+n=length(b);
+e1=zeros(n,1);e1(1)=1.0;
+res=norm(r)/beta;resvec1(1)=res;
+V(:,1)=r/beta; xi=beta*e1; k1=0;
+while(k1<=max_it)
+    k1=k1+1; w=A*V(:,k1);
+    for i=1:k1      % Fixed Aronldi process
+        H(i,k1)=w'*V(:,i);
+        w=w-H(i,k1)*V(:,i);
+    end
+    H(k1+1,k1)=norm(w);
+    if abs(H(k1+1,k1))/beta<tol,
+        return;
+    else
+        V(:,k1+1)=w/H(k1+1,k1);
+    end
+    for i=1:k1-1
+        temp=c(i)*H(i,k1)+s(i)*H(i+1,k1);
+        H(i+1,k1)=-s(i)*H(i,k1)+c(i)*H(i+1,k1);
+        H(i,k1)=temp;
+    end
+    [c(k1),s(k1),H(k1,k1)]=givens(H(k1,k1),H(k1+1,k1));   % Kth Givens Transformation
+    xi(k1+1)=-s(k1)*xi(k1);
+    xi(k1)=c(k1)*xi(k1); H(k1+1,k1)=0.0;
+    res1=abs(xi(k1+1))/beta;
+    resvec1(k1+1)=res1;
+    if(res1<=tol)
+        y=H(1:k1,1:k1)\xi(1:k1); x=x+V(:,1:k1)*y;
+        break;      % Out of loop
+    end
+end
+if (res1>tol)
+    flag=1;
+end
